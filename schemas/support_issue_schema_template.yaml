@@ -1,0 +1,46 @@
+# Support Issue Schema — Reusable Template
+#
+# Drop-in template for authoring AI-ready support content for any issue.
+# The goal is that an LLM grounded in this YAML can answer faithfully,
+# surface ambiguity, and escalate cleanly.
+
+issue:
+  id: <snake_case_id>
+  display_name: <human-readable>
+  applies_to: []
+  not_applicable_to: []
+
+freshness:
+  last_updated: <YYYY-MM-DD>
+  policy_version: <string>
+  review_cadence_days: <int>
+
+definitions:
+  <term>: <unambiguous definition>
+
+eligibility:
+  <outcome>:
+    required_conditions: []
+    disqualifying_conditions: []
+
+user_actions:
+  primary: []
+  fallback: []
+
+agent_handling:
+  agent_can_resolve_unconditionally: <bool>
+  agent_can_resolve_if: []
+  must_escalate_if: []
+
+escalation:
+  channel: <in_app_chat | phone | form | email>
+  prerequisites: []
+  expected_response_sla_hours: <int>
+
+account_specific_dependencies: []
+
+ambiguity_flags:
+  - condition: <description>
+    handling: <resolve | escalate | clarify>
+
+related_sources: []

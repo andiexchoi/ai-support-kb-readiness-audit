@@ -1,0 +1,77 @@
+# AI-Ready Content Model — Missing Delivery
+#
+# A worked example of what an AI-ready support article could look like for
+# the "missing delivery" issue family. This is the portfolio centerpiece:
+# it shows what a KB owner would have to add to make an article reliably
+# answerable by an AI agent.
+
+issue:
+  id: missing_delivery
+  display_name: Missing delivery
+  applies_to:
+    - delivery_orders
+  not_applicable_to:
+    - missing_individual_item   # see schemas/support_issue_schema_template.yaml
+
+freshness:
+  last_updated: 2026-05-31
+  policy_version: "2026.05"
+  review_cadence_days: 90
+
+definitions:
+  missing_delivery: >
+    The order was marked delivered by the courier but the customer reports
+    not receiving any portion of it.
+  distinct_from_missing_item: >
+    Missing item refers to a delivered order with one or more items absent.
+
+eligibility:
+  refund_or_credit:
+    required_conditions:
+      - delivery_marked_complete
+      - report_window_hours: 24
+      - account_in_good_standing
+    disqualifying_conditions:
+      - prior_missing_delivery_claims_in_window:
+          window_days: 30
+          threshold: 3
+
+user_actions:
+  primary:
+    - check_delivery_photo_if_available
+    - confirm_delivery_address_in_order_details
+    - report_through_in_app_help_within_window
+  fallback:
+    - contact_support_with_order_id
+
+agent_handling:
+  agent_can_resolve_unconditionally: false
+  agent_can_resolve_if:
+    - within_report_window
+    - no_disqualifying_conditions
+  must_escalate_if:
+    - outside_report_window
+    - prior_claims_threshold_reached
+    - dispute_over_delivery_photo
+
+escalation:
+  channel: in_app_chat
+  prerequisites:
+    - order_id
+    - account_login
+  expected_response_sla_hours: 24
+
+account_specific_dependencies:
+  - order_id
+  - delivery_status_timestamp
+  - prior_claim_history
+
+ambiguity_flags:
+  - condition: "address marked correct but customer disputes"
+    handling: escalate
+  - condition: "delivery photo shows package at wrong door"
+    handling: escalate
+
+related_sources:
+  - source_id: I001
+  - source_id: D001
