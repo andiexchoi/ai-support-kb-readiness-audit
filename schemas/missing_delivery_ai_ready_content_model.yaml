@@ -66,6 +66,15 @@ account_specific_dependencies:
   - delivery_status_timestamp
   - prior_claim_history
 
+agent_boundary:
+  can_answer_without_account_data: false
+  requires_tool_or_account_lookup: true
+  requires_human_review: true
+  boundary_reason: >
+    Public documentation can explain how to report a missing delivery and what
+    the user may need to provide, but refund eligibility, refund amount, and
+    final resolution require account- or order-specific review.
+
 ambiguity_flags:
   - condition: "address marked correct but customer disputes"
     handling: escalate

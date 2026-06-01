@@ -19,5 +19,5 @@ See `raw/source_snapshots/<company>/` for examples.
 | `raw/source_snapshots/<company>/*.md` | Structured per-article summaries |
 | `processed/benchmark_questions.csv` | Customer questions used to probe each KB |
 | `processed/evaluation_results.csv` | Human content audit scores per source |
-| `processed/ai_answer_reviews.csv` | Review of source-constrained AI answers |
+| `ai_answer_reviews.csv` | Source-constrained AI answers per benchmark question, with manual review scores |
 | `processed/failure_modes_summary.csv` | Tally of failure modes across the dataset |

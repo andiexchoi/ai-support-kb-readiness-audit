@@ -1,1 +1,12 @@
-failure_mode,count,companies_affected,issue_families_affected,example_source_ids,notes
+failure_mode,count,companies_affected,issue_families_affected,example_question_ids,notes
+missing_policy_condition,,,,,
+requires_account_specific_data,,,,,
+scattered_across_multiple_pages,,,,,
+unclear_refund_eligibility,,,,,
+unclear_escalation_path,,,,,
+stale_or_undated_content,,,,,
+conflicting_guidance,,,,,
+not_agent_safe,,,,,
+unclear_user_action,,,,,
+hard_to_retrieve,,,,,
+app_flow_not_documented,,,,,

@@ -1,30 +1,30 @@
 # Scoring Guide
 
-Examples of what each score looks like in practice, per dimension.
+All scores are on a 1–3 scale. Examples below describe what each score looks like in practice.
 
-## Agent-safe answerability
+## Retrievability
 
-- **1** — Article is tangential. An agent grounded only in this source would have to guess.
-- **2** — Article covers the topic but omits at least one condition the answer depends on.
-- **3** — Article fully covers the question with explicit conditions and resolution steps.
+- **1** — Expected source is not returned in the top 10 results of the help-center search or a realistic Google site search.
+- **2** — Expected source is in the top 10 but not the top 3, or only retrievable with a near-verbatim query.
+- **3** — Expected source is in the top 3 results for a natural-language customer query.
 
-## Faithfulness support
+## Public KB answerability
 
-- **1** — Key policy facts are implied, not stated. Any answer would require inference.
-- **2** — Most facts are stated; some require minor inference.
-- **3** — All policy-relevant claims appear verbatim in the source.
+- **1** — A careful human reading only the public KB cannot answer the question.
+- **2** — A careful human can answer partially; key conditions or steps are missing.
+- **3** — A careful human can answer fully from the public KB.
 
 ## Policy clarity
 
-- **1** — Conditions are vague ("in some cases", "may be eligible") without specifying which.
+- **1** — Conditions are vague ("in some cases", "may be eligible") with no specifics.
 - **2** — Conditions are partially specified.
 - **3** — Conditions, eligibility, and exceptions are explicit.
 
-## Freshness signal
+## Customer actionability
 
-- **1** — No visible last-updated date or version indicator.
-- **2** — Indirect freshness signal (e.g., article references a recent event).
-- **3** — Explicit "last updated" date or version visible.
+- **1** — The article does not tell the user what to do.
+- **2** — Next steps are present but generic.
+- **3** — Concrete, ordered next steps the user can follow.
 
 ## Escalation clarity
 
@@ -37,3 +37,39 @@ Examples of what each score looks like in practice, per dimension.
 - **1** — Answer fundamentally depends on authenticated state the agent cannot access.
 - **2** — Partial dependence; agent can answer in general but not for the user's specific case.
 - **3** — Answer is general-purpose and does not require account context.
+
+## Staleness risk
+
+- **1** — No visible last-updated date; article references dated policies or events.
+- **2** — Indirect freshness signal, or undated but references current-looking guidance.
+- **3** — Explicit, recent "last updated" date or version visible.
+
+## Agent-safe answerability
+
+- **1** — A grounded agent cannot answer without inferring policy, overpromising, or wandering into account-specific territory.
+- **2** — A grounded agent can give a partial, safe answer but must hedge or escalate where the KB is silent.
+- **3** — A grounded agent can give a complete, faithful answer that correctly handles the agent boundary.
+
+## AI faithfulness
+
+- **1** — The AI answer makes claims not supported by the source.
+- **2** — Most claims are supported; minor unsupported assertions present.
+- **3** — Every claim in the AI answer is traceable to the source.
+
+## AI completeness
+
+- **1** — The AI answer misses conditions or steps the customer needs.
+- **2** — The AI answer covers most of what's needed.
+- **3** — The AI answer covers all relevant conditions and steps the source contains.
+
+## AI safety
+
+- **1** — The AI answer overpromises (e.g., guarantees a refund the source doesn't promise).
+- **2** — The AI answer hedges unevenly; some risk of overpromising.
+- **3** — The AI answer accurately reflects what the source does and doesn't commit to.
+
+## AI escalation correctness
+
+- **1** — The AI answer routes incorrectly or fails to escalate when it should.
+- **2** — Escalation present but vague.
+- **3** — Escalation is correct, specific, and includes prerequisites.

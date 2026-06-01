@@ -2,44 +2,61 @@
 
 ## Goal
 
-Produce a credible, public-safe audit of whether four major consumer support KBs are ready to back an AI agent — and propose a content model that would make them ready.
+Produce a credible, public-safe **KB-readiness audit** of four major consumer support knowledge bases — and propose a content model that would make them ready for an AI agent. Portfolio framing: technical writer → AI knowledge architect.
+
+## Locked scope
+
+- 4 companies: Uber, Lyft, DoorDash, Instacart
+- 6 questions per company; 24 total
+- 16–24 source articles
+- 1–3 scoring scale
+- AI answer test: all 24 if possible, minimum 12
+- Deliverables: write-up, three CSVs, rubric, one AI-ready schema
 
 ## Phases
 
 ### 1. Scope and rubric
-- Pick issue families
-- Draft rubric (`rubric/evaluation_rubric.md`)
-- Draft scoring examples (`rubric/scoring_guide.md`)
+- Lock issue families and the 1–3 rubric
+- Draft `rubric/evaluation_rubric.md` and `rubric/scoring_guide.md`
 
 ### 2. Source snapshot
-- Collect public help-center articles
-- Record metadata in `data/raw/support_kb_sources.csv`
-- Write structured summaries in `data/raw/source_snapshots/`
+- Collect public help-center articles (treat as point-in-time public KB)
+- Record metadata and **paraphrased summaries only** in `data/raw/support_kb_sources.csv`
+- Tag each source with `evidence_type`
 
 ### 3. Benchmark questions
-- Draft questions per issue family
+- Draft 6 questions per company by issue family
 - Expand via LLM (`prompts/question_generation_prompt.md`)
 - Manually review
 - Save to `data/processed/benchmark_questions.csv`
 
-### 4. Human content audit
-- Score each source against the rubric
-- Fill in `data/processed/evaluation_results.csv`
+### 4. Calibration pass
+- Manually score 4 questions (one per company) end-to-end
+- Adjust rubric / scoring guide if any dimension feels inconsistent
+- Only then proceed to scoring the rest
 
-### 5. AI answer review
+### 5. Retrievability test
+- For each question, run a realistic query against the help-center search and/or Google site search
+- Record `search_surface`, `found_expected_source`, `rank_if_found`, `retrievability_score`
+
+### 6. Manual content scoring
+- Score each question against the rubric, including the split between `public_kb_answerability_score` and `agent_safe_answerability_score`
+- Fill `data/processed/evaluation_results.csv`
+
+### 7. AI answer review
 - Generate source-constrained answers (`prompts/source_constrained_answer_prompt.md`)
-- Review for unsupported claims (`prompts/unsupported_claims_review_prompt.md`)
-- Fill in `data/processed/ai_answer_reviews.csv`
+- Use AI-assisted review only to surface candidate unsupported claims
+- Manually score `ai_faithfulness_score`, `ai_completeness_score`, `ai_safety_score`, `ai_escalation_correctness_score`
 
-### 6. Analysis
+### 8. Analysis
 - Roll up to company, issue family, failure mode
 - Write `analysis/score_analysis.md`
-- Produce visuals
+- Produce 4–6 findings and visuals
 
-### 7. Schema
-- Complete `schemas/missing_delivery_ai_ready_content_model.yaml`
+### 9. Schema
+- Complete `schemas/missing_delivery_ai_ready_content_model.yaml` (includes `agent_boundary`)
 - Generalize into `schemas/support_issue_schema_template.yaml`
 
-### 8. Write-up
+### 10. Write-up
 - Draft `writeup/index.md`
-- Embed figures
+- Embed figures and link to data
