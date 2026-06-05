@@ -1,5 +1,7 @@
 # Evaluation Rubric
 
+**Status: frozen 2026-06-05** after the 4-question calibration pass (one question per company; final IDs Q001, Q007, Q013, Q019). Further changes require a new calibration pass and a changelog entry.
+
 Each benchmark question is scored on a 1–3 scale across the dimensions below. See `scoring_guide.md` for what each score looks like in practice. Scoring is per-question, not per-article, because the unit of analysis is "can this KB answer this customer question."
 
 The rubric separates **public KB answerability** (can a careful human get the answer from the public KB?) from **agent-safe answerability** (can a well-behaved AI agent ground a complete, non-overpromising answer in the public KB?).
@@ -26,8 +28,8 @@ When the article can't fully resolve the issue, it points to a specific channel 
 ### Account-specific dependency
 How dependent is the answer on authenticated state the agent may not have? (Lower dependence = higher score.)
 
-### Staleness risk
-How likely is this content to be out of date, based on visible date signals and references to dated policies?
+### Freshness signal
+How strong is the visible freshness metadata on the source — an explicit "last updated" date, version, or equivalent signal that the article is current? Higher score = stronger visible signal. (Replaces the earlier `staleness_risk` dimension; the calibration pass showed that what we can actually observe in the public KB is the presence or absence of a freshness signal, not true staleness.)
 
 ### Agent-safe answerability
 A well-behaved AI agent grounded only in this source can answer faithfully, without overpromising or crossing into account-specific territory it cannot verify.

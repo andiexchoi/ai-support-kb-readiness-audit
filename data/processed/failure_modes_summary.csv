@@ -4,9 +4,14 @@ requires_account_specific_data,,,,,
 scattered_across_multiple_pages,,,,,
 unclear_refund_eligibility,,,,,
 unclear_escalation_path,,,,,
-stale_or_undated_content,,,,,
+freshness_signal_absent,,,,,Renamed from stale_or_undated_content to align with freshness_signal_score rubric.
 conflicting_guidance,,,,,
 not_agent_safe,,,,,
 unclear_user_action,,,,,
 hard_to_retrieve,,,,,
 app_flow_not_documented,,,,,
+query_phrasing_sensitivity,,,,,Added 2026-06-04. Article is retrievable only with reformulated/keyword queries; natural-language phrasing returns nothing or wrong results. Calibration example: Q019.
+ambiguous_issue_routing,,,,,Added 2026-06-04. KB recognizes the query but resolution branches across distinct sub-cases (e.g. charge type) before a grounded answer is possible. Distinct from hard_to_retrieve and scattered_across_multiple_pages. Calibration example: Q007.
+audience_mismatch_retrieval,,,,,"Added 2026-06-04. Search returns content for the wrong audience (e.g. driver-facing article when a rider asks). Calibration example: Q013."
+external_search_adds_unsupported_guidance,,,,,Added 2026-06-04. External surfaces (e.g. Google AI Overview) synthesize guidance not present in the company KB. Captured because public-KB-grounded agents must not inherit these claims. Calibration examples: Q001 Q013.
+external_search_overstates_policy_certainty,,,,,Added 2026-06-04. Overconfidence sub-variant of external_search_adds_unsupported_guidance: external surface restates source content but with stronger certainty than the source supports. Calibration example: Q019.

@@ -1,10 +1,10 @@
-# Calibration AI answers (QCAL-001 – QCAL-004)
+# Calibration AI answers (Q001, Q007, Q013, Q019)
 
 Source-constrained answers generated using `prompts/source_constrained_answer_prompt.md` against the captured source summaries in `data/raw/source_snapshots/`. **No outside knowledge used.** Final `ai_faithfulness_score`, `ai_completeness_score`, `ai_safety_score`, `ai_escalation_correctness_score`, and `unsupported_claims` are intentionally left blank in `evaluation_results.csv` until the human reviewer scores these answers.
 
 ---
 
-## QCAL-001 — DoorDash, "My order says delivered, but I never received it. What should I do?"
+## Q001 — DoorDash, "My order says delivered, but I never received it. What should I do?"
 
 Sources used: **DD-001** only.
 
@@ -43,7 +43,7 @@ If you'd like to talk to a person, you can use live chat in the DoorDash app or 
 
 ---
 
-## QCAL-002 — Uber, "My driver never arrived, but I was still charged. Can I get a refund?"
+## Q007 — Uber, "My driver never arrived, but I was still charged. Can I get a refund?"
 
 Sources used: **UB-001** and **UB-002**.
 
@@ -84,7 +84,7 @@ The public articles do not guarantee a refund. Final resolution depends on Uber'
 
 ---
 
-## QCAL-003 — Lyft, "I canceled because the driver was not moving. Why was I charged a cancellation fee?"
+## Q013 — Lyft, "I canceled because the driver was not moving. Why was I charged a cancellation fee?"
 
 Sources used: **LY-002** (rider-facing). LY-001 is driver-facing and not used to answer the rider's question.
 
@@ -131,7 +131,7 @@ The public rider article does not state that a stationary or non-progressing dri
 
 ---
 
-## QCAL-004 — Instacart, "My groceries are missing several items. Can I get a refund?"
+## Q019 — Instacart, "My groceries are missing several items. Can I get a refund?"
 
 Sources used: **IC-001** and **IC-002**.
 

@@ -38,11 +38,13 @@ All scores are on a 1–3 scale. Examples below describe what each score looks l
 - **2** — Partial dependence; agent can answer in general but not for the user's specific case.
 - **3** — Answer is general-purpose and does not require account context.
 
-## Staleness risk
+## Freshness signal
 
-- **1** — No visible last-updated date; article references dated policies or events.
-- **2** — Indirect freshness signal, or undated but references current-looking guidance.
-- **3** — Explicit, recent "last updated" date or version visible.
+Scores the *visible* freshness metadata on the article. Higher = stronger signal.
+
+- **1** — No visible freshness metadata: no last-updated date, no version, no dated reference. The reader cannot tell when the article was last reviewed.
+- **2** — Indirect freshness signal only: the article references a current-looking program, fee structure, or policy that implies recency, but no explicit article-level date or version is exposed.
+- **3** — Explicit article-level freshness metadata is visible: a "last updated" date, "effective" date, or version stamp tied to the article itself.
 
 ## Agent-safe answerability
 

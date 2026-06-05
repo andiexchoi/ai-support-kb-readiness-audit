@@ -48,7 +48,9 @@ Each scored question is tagged with an `evidence_type` to distinguish how the re
 
 ## Calibration pass
 
-Before scoring the full set, a **4-question manual calibration pass** is run — one question per company, spanning missing delivery, missing ride / no-show, cancellation fee, and missing items. Calibration rows live in the main CSVs with `QCAL-*` question IDs so the schema stays consistent with the full dataset. The pass is treated as a mini version of the whole project: collect 1–3 source records per question, run retrievability, score manually, generate a source-constrained AI answer, and review it. The point is to stress-test the rubric, scoring guide, and CSV fields — not to produce final scores. After the pass, the rubric is revised once, then frozen.
+A **4-question manual calibration pass** is run first — one question per company, spanning missing delivery, missing ride / no-show, cancellation fee, and missing items — to stress-test the schemas, scoring definitions, retrieval notes, source-constrained AI answer test, and failure-mode taxonomy. The pass is treated as a mini version of the whole project: collect 1–3 source records per question, run retrievability, score manually, generate a source-constrained AI answer, and review it.
+
+After the calibration pass, the rubric and failure-mode taxonomy are revised once and frozen. The four calibrated examples are then **folded into the final 24-question benchmark** using the final company-grouped IDs (Q001 → DoorDash, Q007 → Uber, Q013 → Lyft, Q019 → Instacart), so the final dataset is one continuous benchmark rather than a calibration set plus a real set. The calibration history is preserved in `docs/changelog.md`.
 
 ## AI answer review
 
