@@ -22,6 +22,10 @@ A small set of high-frequency consumer issue families was chosen to keep the aud
 
 Six realistic customer questions per company (24 total) were drafted by issue family, expanded with an LLM (see `prompts/question_generation_prompt.md`), and manually reviewed. The final question set lives in `data/processed/benchmark_questions.csv`.
 
+I selected benchmark questions by combining visible public-support navigation signals, such as popular articles and top-level help categories, with high-risk customer complaint patterns found in public reporting and community discussions. I did not claim these questions represent internal ticket volume. Instead, I treated them as realistic, high-frequency, high-risk support scenarios that public KBs should be able to answer or safely route.
+
+Benchmark questions were written in natural customer language rather than help-center article-title language. I intentionally avoided matching the exact wording of support article titles where possible, because one goal of the audit was to test whether public support search systems could map realistic customer phrasing to the correct source. When natural-language searches failed, I recorded whether a keyword reformulation retrieved the expected source.
+
 ## Retrievability test
 
 Before scoring answer quality, each question is run as a query against the **company help center search and/or Google site search** for that domain. The retrieval surface used, whether the expected source was found, and its rank are recorded in `data/processed/evaluation_results.csv`. A KB article that exists but cannot be retrieved by a realistic search is treated as a retrievability failure.
