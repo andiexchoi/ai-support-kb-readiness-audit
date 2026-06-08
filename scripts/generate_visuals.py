@@ -18,6 +18,9 @@ plt.rcParams.update({
     "savefig.bbox": "tight",
     "font.size": 10,
     "font.family": "Inter",
+    "figure.facecolor": "#fffef7",
+    "axes.facecolor": "#fffef7",
+    "savefig.facecolor": "#fffef7",
 })
 
 
@@ -27,7 +30,7 @@ def plot_failure_modes():
     df = df.sort_values("count", ascending=True)
 
     fig, ax = plt.subplots(figsize=(9, 5))
-    bars = ax.barh(df["failure_mode"], df["count"], color="#3b6fb6")
+    bars = ax.barh(df["failure_mode"], df["count"], color="#6b4ee6")
     for bar, share in zip(bars, df["share_num"]):
         ax.text(bar.get_width() + 0.15, bar.get_y() + bar.get_height() / 2,
                 f"{int(bar.get_width())} ({share:.1f}%)", va="center", fontsize=9)
@@ -60,7 +63,7 @@ def plot_company_scores():
 
 def plot_issue_family_scores():
     df = pd.read_csv(ANALYSIS / "issue_family_summary.csv").sort_values("avg_total", ascending=True)
-    colors = ["#c0392b" if v < 2.0 else "#e67e22" if v < 2.4 else "#27ae60" for v in df["avg_total"]]
+    colors = ["#8770EB" if v >= 2.4 else "#5A3BE3" if v >= 2.2 else "#401FD6" for v in df["avg_total"]]
 
     fig, ax = plt.subplots(figsize=(9, 6))
     bars = ax.barh(df["issue_family"], df["avg_total"], color=colors)
@@ -85,11 +88,20 @@ def plot_retrieval_vs_content_gap():
     x = range(len(grouped))
     width = 0.38
 
+    pair = {
+        "DoorDash": ("#CC1400", "#ff351f"),
+        "Instacart": ("#f56600", "#ff8833"),
+        "Lyft": ("#FF0AC2", "#FF70DB"),
+        "Uber": ("#292929", "#666666"),
+    }
+    retr_colors = [pair.get(c, ("#888", "#bbb"))[0] for c in grouped["company"]]
+    ans_colors = [pair.get(c, ("#888", "#bbb"))[1] for c in grouped["company"]]
+
     fig, ax = plt.subplots(figsize=(8, 4.8))
     b1 = ax.bar([i - width / 2 for i in x], grouped["retrievability_score"], width,
-                label="Retrievability", color="#e76f51")
+                color=retr_colors)
     b2 = ax.bar([i + width / 2 for i in x], grouped["public_kb_answerability_score"], width,
-                label="Public KB answerability", color="#2a9d8f")
+                color=ans_colors)
     for bars in (b1, b2):
         for bar in bars:
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.03,
@@ -99,7 +111,12 @@ def plot_retrieval_vs_content_gap():
     ax.set_ylim(1, 3.4)
     ax.set_ylabel("Average score (1–3)")
     ax.set_title("Retrievability vs. public KB answerability\nContent often answers the question better than native search can find it")
-    ax.legend(frameon=False, loc="upper right")
+    legend_handles = [
+        plt.Rectangle((0, 0), 1, 1, color="#666"),
+        plt.Rectangle((0, 0), 1, 1, color="#bbb"),
+    ]
+    ax.legend(legend_handles, ["Retrievability", "Public KB answerability"],
+              frameon=False, loc="upper right")
     ax.spines[["top", "right"]].set_visible(False)
     fig.savefig(OUT / "retrieval_vs_content_gap.png")
     plt.close(fig)
