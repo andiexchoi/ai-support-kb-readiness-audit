@@ -2,13 +2,23 @@
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 
 ROOT = Path(__file__).resolve().parents[1]
 ANALYSIS = ROOT / "analysis"
 OUT = ROOT / "visuals"
 OUT.mkdir(exist_ok=True)
 
-plt.rcParams.update({"figure.dpi": 140, "savefig.bbox": "tight", "font.size": 10})
+FONT_DIR = Path(__file__).resolve().parent / "fonts"
+for ttf in FONT_DIR.glob("*.ttf"):
+    font_manager.fontManager.addfont(str(ttf))
+
+plt.rcParams.update({
+    "figure.dpi": 140,
+    "savefig.bbox": "tight",
+    "font.size": 10,
+    "font.family": "Inter",
+})
 
 
 def plot_failure_modes():
@@ -31,8 +41,11 @@ def plot_failure_modes():
 
 def plot_company_scores():
     df = pd.read_csv(ANALYSIS / "company_score_summary.csv").sort_values("avg_total", ascending=False)
+    brand = {"DoorDash": "#E01600", "Instacart": "#ff8833",
+             "Lyft": "#ff5cd6", "Uber": "#1f1f1f"}
     fig, ax = plt.subplots(figsize=(7, 4.5))
-    bars = ax.bar(df["company"], df["avg_total"], color=["#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"])
+    bars = ax.bar(df["company"], df["avg_total"],
+                  color=[brand.get(c, "#888") for c in df["company"]])
     for bar, v in zip(bars, df["avg_total"]):
         ax.text(bar.get_x() + bar.get_width() / 2, v + 0.03, f"{v:.1f}",
                 ha="center", fontsize=10, fontweight="bold")
@@ -108,8 +121,8 @@ def plot_category_scores_by_company():
     grouped = df.groupby("company")[cols].mean().sort_index()
 
     companies = grouped.index.tolist()
-    colors = {"DoorDash": "#eb1700", "Instacart": "#FF7009",
-              "Lyft": "#FF00BF", "Uber": "#000000"}
+    colors = {"DoorDash": "#E01600", "Instacart": "#ff8833",
+              "Lyft": "#ff5cd6", "Uber": "#1f1f1f"}
     n = len(companies)
     width = 0.8 / n
     x = range(len(labels))
