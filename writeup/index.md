@@ -10,7 +10,7 @@ AI support agents are being deployed against the same knowledge bases that human
 
 ## Related work
 
-WixQA, RAGAS, and Amazon's public writeups on agent evaluation. See [`../related_work.md`](../related_work.md).
+WixQA, ARES, Doc2Dial/MultiDoc2Dial, and Amazon's public writeups on agent evaluation. See [`../related_work.md`](../related_work.md).
 
 ## Methodology
 
@@ -59,9 +59,17 @@ The implication is direct: source-constrained generation against a curated KB is
 
 ## AI-ready content model
 
-The two failure modes that dominate this audit — retrieval failure and missing policy conditions — suggest a small set of structured fields that would lift agent-readiness without rewriting the underlying help articles. Excerpts from the schema work in [`../schemas/`](../schemas/) explore what those fields look like for the highest-severity issue families (missing delivery, cancellation fee). The intent is not to replace the help article but to attach machine-readable conditions, eligibility windows, escalation routes, and freshness signals alongside it.
+The two failure modes that dominate this audit — retrieval failure and missing policy conditions — suggest a small set of structured fields that would lift agent-readiness without rewriting the underlying help articles. Two worked examples are checked in for the highest-severity issue families:
 
-> Schema files are in active revision; this section will be expanded once the missing-delivery and cancellation-fee schemas are finalized.
+- [`../schemas/missing_delivery_ai_ready_content_model.yaml`](../schemas/missing_delivery_ai_ready_content_model.yaml) — grounded in DD-001 (DoorDash) and IC-002 / IC-003 (Instacart).
+- [`../schemas/cancellation_fee_ai_ready_content_model.yaml`](../schemas/cancellation_fee_ai_ready_content_model.yaml) — grounded in UB-002 (Uber) and LY-002 (Lyft).
+
+Both schemas separate two layers explicitly:
+
+1. **Source-backed `policy_observations`.** Each company's section lists only what the captured public article actually states, paired with an explicit `does_not_state` list (e.g., "no guaranteed refund," "no published response timing"). This is the layer an agent can quote from.
+2. **`proposed_required_metadata`.** Placeholders (`<TBD by KB owner>`) for the structured fields a KB owner would need to add to make the article reliably agent-answerable — eligibility conditions, response windows, freshness dates, dispute SLAs. These are explicitly *not* claims about current policy; they are the contract a KB owner would have to sign before an agent could resolve cases unconditionally.
+
+The schemas also encode the two retrieval-era risks the audit surfaced. Each one carries a `retrievability_observations` block (what the company's internal search did with the natural-language query) and an `external_search_behavior_caveats` block (specific unsupported claims that off-source AI overlays added during retrieval, logged so an agent constrained to the schema knows what to filter out). The `agent_boundary` block decomposes "can the agent answer?" into per-capability booleans — public-KB guidance is fair game; refund amounts, refund timing, and eligibility decisions are not. A short `do_not_say` list captures the specific phrasings (refund guarantees, invented business-day windows, off-source recovery steps) that an agent grounded in this schema must avoid even when external search produces them fluently.
 
 ## Recommendations
 

@@ -23,13 +23,19 @@ AI support agents are only as good as the knowledge they retrieve. Most public K
 
 ## What's in the repo
 
-- `methodology.md` — how the audit was run
-- `related_work.md` — WixQA, RAGAS, Amazon agent eval in plain English
-- `limitations.md` — what this is and isn't
+- [`methodology.md`](methodology.md) — how the audit was run
+- [`related_work.md`](related_work.md) — WixQA, ARES, Doc2Dial/MultiDoc2Dial, Amazon agent eval in plain English
+- [`limitations.md`](limitations.md) — what this is and isn't
+- [`writeup/index.md`](writeup/index.md) — final public-facing essay
+- [`analysis/score_analysis.md`](analysis/score_analysis.md) — detailed evidence-oriented score analysis
+- [`data/processed/evaluation_results.csv`](data/processed/evaluation_results.csv) — per-question scores across all rubric dimensions
+- [`data/ai_answer_reviews.csv`](data/ai_answer_reviews.csv) — source-constrained AI answers and unsupported-claims reviews
+- [`schemas/missing_delivery_ai_ready_content_model.yaml`](schemas/missing_delivery_ai_ready_content_model.yaml) — worked AI-ready content model for the missing-delivery issue family
+- [`schemas/cancellation_fee_ai_ready_content_model.yaml`](schemas/cancellation_fee_ai_ready_content_model.yaml) — worked AI-ready content model for the cancellation-fee issue family
 - `data/` — source metadata, paraphrased summaries, benchmark questions, scores
 - `rubric/` — scoring dimensions and examples (1–3 scale)
 - `prompts/` — exact prompts used with AI, plus review prompts
-- `schemas/` — proposed AI-ready content model (with `agent_boundary`) and reusable template
+- `schemas/` — proposed AI-ready content models (with `agent_boundary`) and reusable template
 - `analysis/` — score breakdowns and patterns
 - `visuals/` — charts
 - `writeup/` — final essay
