@@ -1,1 +1,5 @@
 company,n_sources,avg_answerability,avg_faithfulness_support,avg_policy_clarity,avg_freshness_signal,avg_escalation_clarity,avg_account_dependency,avg_total
+DoorDash,6,2.7,3,2.3,1,2.8,2.3,2.4
+Instacart,6,3,3,3,1,3,2.2,2.5
+Lyft,6,2.3,3,2.3,1,2.7,2.3,2.3
+Uber,6,2.5,3,2.5,1,2.3,2.3,2.3

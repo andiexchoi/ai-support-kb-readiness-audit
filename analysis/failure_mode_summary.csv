@@ -1,1 +1,8 @@
 failure_mode,count,share_of_total,companies_affected,issue_families_affected,notes
+hard_to_retrieve,10,41.7%,DoorDash; Instacart; Lyft; Uber,cancellation_or_refund; membership_or_subscription_charge; missing_delivery; refund_status; support_escalation; unexpected_or_disputed_charge,"Examples: Q001, Q003, Q006, Q012, Q015, Q018, Q021, Q022, Q023, Q024"
+query_phrasing_sensitivity,6,25.0%,DoorDash; Instacart; Lyft,lost_item; missing_items; pending_or_unexpected_charge; refund_status; wrong_or_incomplete_order,"Examples: Q002, Q005, Q014, Q016, Q019, Q020"
+missing_policy_condition,3,12.5%,DoorDash; Lyft; Uber,duplicate_or_unexpected_charge; refund_status; wrong_or_problematic_service,"Examples: Q004, Q008, Q017"
+ambiguous_issue_routing,2,8.3%,Uber,missing_service_or_trip_not_taken; unexpected_or_disputed_charge,"Examples: Q007, Q010"
+(no failure mode tagged),1,4.2%,Uber,cancellation_fee,Examples: Q009
+audience_mismatch_retrieval,1,4.2%,Lyft,cancellation_fee,Examples: Q013
+requires_account_specific_data,1,4.2%,Uber,refund_status,Examples: Q011
