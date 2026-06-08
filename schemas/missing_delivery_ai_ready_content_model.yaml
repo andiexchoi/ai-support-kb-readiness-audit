@@ -1,9 +1,19 @@
 # AI-Ready Content Model — Missing Delivery
 #
 # A worked example of what an AI-ready support article could look like for
-# the "missing delivery" issue family. This is the portfolio centerpiece:
-# it shows what a KB owner would have to add to make an article reliably
-# answerable by an AI agent.
+# the "missing delivery" issue family. Two layers are kept strictly separate:
+#
+#   1. Fields populated from captured public sources (DD-001, IC-002, IC-003)
+#      contain only information the source actually states.
+#   2. Fields under `proposed_required_metadata` are schema *proposals* —
+#      structured fields a KB owner would need to add to make this article
+#      reliably agent-answerable. They are NOT claims about current policy.
+#      Operational values inside this section are placeholders (`<TBD by
+#      KB owner>`), not invented numbers.
+#
+# Source-of-truth for every populated field is the captured snapshot in
+# data/raw/support_kb_sources.csv as of 2026-06-01. No SLAs, refund windows,
+# or eligibility thresholds appear here unless they appear in those sources.
 
 issue:
   id: missing_delivery
@@ -13,74 +23,213 @@ issue:
   not_applicable_to:
     - missing_individual_item   # see schemas/support_issue_schema_template.yaml
 
-freshness:
-  last_updated: 2026-05-31
-  policy_version: "2026.05"
-  review_cadence_days: 90
-
 definitions:
   missing_delivery: >
-    The order was marked delivered by the courier but the customer reports
-    not receiving any portion of it.
+    The order was marked delivered or expected to be delivered, but the
+    customer reports not receiving any portion of it. Distinct from a
+    delivered order with one or more items absent (see missing_items).
   distinct_from_missing_item: >
     Missing item refers to a delivered order with one or more items absent.
 
-eligibility:
-  refund_or_credit:
-    required_conditions:
-      - delivery_marked_complete
-      - report_window_hours: 24
-      - account_in_good_standing
-    disqualifying_conditions:
-      - prior_missing_delivery_claims_in_window:
-          window_days: 30
-          threshold: 3
+freshness:
+  # Source-backed: every captured help-center article in this audit had no
+  # visible last-updated date as of 2026-06-01. Freshness signal is the
+  # weakest dimension across all four companies (avg score 1/3).
+  source_observations:
+    - source_id: DD-001
+      visible_last_updated_date: not_visible
+    - source_id: IC-002
+      visible_last_updated_date: not_visible
+    - source_id: IC-003
+      visible_last_updated_date: not_visible
+  proposed_required_metadata:
+    last_updated: <YYYY-MM-DD — to be exposed by KB owner>
+    policy_version: <string — to be exposed by KB owner>
+    review_cadence_days: <int — to be set by KB owner>
+
+policy_observations:
+  # What the captured public sources actually say. Direct paraphrase only,
+  # no inferred eligibility rules.
+  doordash:
+    source_ids: [DD-001]
+    states:
+      - "DoorDash investigates orders reported as never delivered."
+      - "After reporting, the user is routed to select a resolution or chat with an agent."
+    does_not_state:
+      - explicit_refund_eligibility_rules
+      - time_window_for_reporting
+      - guaranteed_outcome
+  instacart:
+    source_ids: [IC-002, IC-003]
+    states:
+      - "Order issues must be self-reported within 3 days of pickup or delivery (IC-002)."
+      - "Not all issues automatically qualify for a credit or refund (IC-002)."
+      - "Same-day refund may be possible if reported within 24 hours (IC-002)."
+      - "If the order never arrived, reach out to Instacart Customer Experience (IC-003)."
+      - "Refund or credit may be up to the amount paid; partial refund or credit may apply (IC-002)."
+    does_not_state:
+      - guaranteed_refund_for_never_arrived
+      - response_timing_after_escalation
+
+cross_company_observations:
+  # Side-by-side of how the two companies in this issue family differ on
+  # what is publicly stated. Helps an agent know which fields it can rely
+  # on per company.
+  reporting_window:
+    doordash: not_stated_in_captured_source
+    instacart: "3 days of pickup or delivery (IC-002)"
+  same_day_refund_path:
+    doordash: not_stated_in_captured_source
+    instacart: "Possible if reported within 24 hours; appears as adjustment to original charge (IC-002)"
+  never_arrived_escalation:
+    doordash: "Reporting flow routes user to select a resolution or chat with an agent (DD-001); 24/7 chat + phone via DD-007"
+    instacart: "Explicit instruction to reach out to Instacart Customer Experience (IC-003)"
+  refund_amount_language:
+    doordash: not_stated_in_captured_source
+    instacart: "Up to the amount paid; partial possible (IC-002)"
 
 user_actions:
-  primary:
-    - check_delivery_photo_if_available
-    - confirm_delivery_address_in_order_details
-    - report_through_in_app_help_within_window
-  fallback:
-    - contact_support_with_order_id
+  # Each step is sourced to the article that supports it.
+  doordash:
+    primary:
+      - step: "In the DoorDash app, go to Orders > Help > Delivery Issues > Order never arrived, then follow prompts."
+        source: DD-001
+      - step: "On desktop, open Orders, choose the order, select Help, then under Delivery issues select Order never arrived."
+        source: DD-001
+    fallback:
+      - step: "Use in-app live chat or DoorDash consumer support."
+        source: DD-001
+  instacart:
+    primary:
+      - step: "In the app: Account > Orders > Get help on the relevant order, choose the issue, select affected items, choose a resolution."
+        source: IC-002
+      - step: "On the website: Your orders > Report a problem, select the issue and affected items, choose a resolution."
+        source: IC-002
+    fallback:
+      - step: "For an order that never arrived, contact Instacart Customer Experience."
+        source: IC-003
 
 agent_handling:
   agent_can_resolve_unconditionally: false
-  agent_can_resolve_if:
-    - within_report_window
-    - no_disqualifying_conditions
-  must_escalate_if:
-    - outside_report_window
-    - prior_claims_threshold_reached
-    - dispute_over_delivery_photo
-
-escalation:
-  channel: in_app_chat
-  prerequisites:
-    - order_id
-    - account_login
-  expected_response_sla_hours: 24
-
-account_specific_dependencies:
-  - order_id
-  - delivery_status_timestamp
-  - prior_claim_history
+  agent_can_explain_without_account:
+    - reporting_flow
+    - escalation_path
+    - publicly_stated_policy_conditions
+  must_escalate_or_handoff_if:
+    - user_asks_for_specific_refund_amount
+    - user_asks_for_response_timing_not_in_captured_source
+    - user_describes_scenario_outside_captured_policy
+    - account_or_order_specific_review_is_required
 
 agent_boundary:
-  can_answer_without_account_data: false
-  requires_tool_or_account_lookup: true
-  requires_human_review: true
+  can_answer_without_account_data:
+    public_kb_guidance: true
+    eligibility_decision: false
+    refund_amount: false
+    refund_timing: false
+  requires_authenticated_account_or_order_lookup_for:
+    - confirming_delivery_status_for_a_specific_order
+    - viewing_delivery_photo_if_available
+    - issuing_credit_or_refund
+    - escalating_via_logged_in_help_flow
   boundary_reason: >
-    Public documentation can explain how to report a missing delivery and what
-    the user may need to provide, but refund eligibility, refund amount, and
-    final resolution require account- or order-specific review.
+    The captured public articles describe how to report a missing delivery
+    and the routing the user can expect. They do not publish refund
+    eligibility rules, refund amounts, or response timing. Anything beyond
+    explaining the reporting flow and publicly stated policy requires
+    authenticated account or order review.
+
+retrievability_observations:
+  # From evaluation_results.csv (Q001 DoorDash, Q021 Instacart).
+  doordash_q001:
+    internal_search_found_expected_source: false
+    failure_mode: hard_to_retrieve
+    note: >
+      DoorDash help-center search returned no results for the natural-language
+      question. Reformulated queries surfaced DD-001 but not as top result.
+  instacart_q021:
+    internal_search_found_expected_source: false
+    failure_mode: hard_to_retrieve
+    note: >
+      Instacart Help search failed on both natural-language and reformulated
+      "order not delivered" queries. Google retrieved IC-002 and IC-003 directly.
+  implication: >
+    For this issue family the dominant failure across companies is retrieval,
+    not content. An agent fronted with semantic search or LLM-mediated query
+    rewriting would lift answerability without any change to the underlying
+    articles.
+
+external_search_behavior_caveats:
+  # Captured during retrieval, NOT to be reproduced by an agent grounded in
+  # the public KB. Logged so agent builders know which off-source claims to
+  # filter out.
+  doordash_q001:
+    overlay: google_ai_overview
+    added_unsupported_guidance:
+      - "Check the delivery photo"
+      - "Contact the Dasher"
+      - "Ask neighbors"
+    note: "Not grounded in DD-001."
+  instacart_q021:
+    overlay: google_ai_overview
+    added_unsupported_guidance:
+      - "Check delivery photos"
+      - "Contact the shopper within a 20-minute post-delivery chat window"
+    note: "Not supported by IC-002 or IC-003. Treat as external-search behavior."
+  general_pattern: >
+    External search frequently invents recovery actions and timing claims
+    that the captured public sources do not commit to. An agent constrained
+    to this schema must not reproduce them.
+
+do_not_say:
+  - phrase: "You will get a refund."
+    reason: "No captured source guarantees a refund for missing delivery."
+  - phrase: "Your refund will arrive in N business days."
+    reason: "No captured source publishes a numeric window for this issue family."
+  - phrase: "Check the delivery photo."
+    reason: "Not stated in DD-001, IC-002, or IC-003."
+  - phrase: "Contact the shopper within 20 minutes."
+    reason: "Instacart sources do not state this."
 
 ambiguity_flags:
-  - condition: "address marked correct but customer disputes"
-    handling: escalate
-  - condition: "delivery photo shows package at wrong door"
-    handling: escalate
+  - condition: "User asks for refund timing"
+    handling: "Explain that captured public sources do not publish a universal timing window; route to in-app status check and support."
+  - condition: "User asks whether they are eligible for a refund"
+    handling: "Explain the reporting flow and that eligibility is determined by the company's review of the specific order; do not promise an outcome."
+  - condition: "User describes a delivery-photo dispute"
+    handling: "Escalate. Captured sources do not address delivery-photo adjudication."
+
+proposed_required_metadata:
+  # Fields a KB owner would need to add to make this article reliably
+  # agent-answerable. Placeholders only — NOT claims about current policy.
+  eligibility:
+    refund_or_credit:
+      required_conditions:
+        - "<TBD by KB owner — e.g., delivery_marked_complete>"
+        - "<TBD by KB owner — reporting window in hours/days>"
+        - "<TBD by KB owner — account standing requirement, if any>"
+      disqualifying_conditions:
+        - "<TBD by KB owner — prior-claim thresholds, if any>"
+  escalation:
+    channel: "<TBD by KB owner — in_app_chat | phone | form>"
+    prerequisites:
+      - "<TBD by KB owner — order_id, account_login, etc.>"
+    expected_response_sla_hours: "<TBD by KB owner — only if officially committed>"
+  freshness:
+    last_updated: "<TBD by KB owner>"
+    policy_version: "<TBD by KB owner>"
+    review_cadence_days: "<TBD by KB owner>"
 
 related_sources:
-  - source_id: I001
-  - source_id: D001
+  - source_id: DD-001
+    company: DoorDash
+    url: https://help.doordash.com/en-us/consumers/article/i-never-received-my-doordash-order
+    date_accessed: 2026-06-01
+  - source_id: IC-002
+    company: Instacart
+    url: https://www.instacart.com/help/section/3252458959/3279632311
+    date_accessed: 2026-06-01
+  - source_id: IC-003
+    company: Instacart
+    url: https://www.instacart.com/help/section/2151337978
+    date_accessed: 2026-06-06

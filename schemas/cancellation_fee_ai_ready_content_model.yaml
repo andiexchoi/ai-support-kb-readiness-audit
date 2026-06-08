@@ -1,0 +1,241 @@
+# AI-Ready Content Model — Cancellation Fee
+#
+# A worked example for the "cancellation fee" issue family, grounded in
+# Q009/UB-002 (Uber) and Q013/LY-002 (Lyft). Same two-layer discipline as
+# the missing-delivery schema:
+#
+#   1. Fields populated from captured public sources contain only what the
+#      source actually states (paraphrased, no inferred rules).
+#   2. Fields under `proposed_required_metadata` are placeholders for
+#      structured fields a KB owner would need to add. They are NOT claims
+#      about current policy.
+#
+# Source-of-truth for every populated field is the captured snapshot in
+# data/raw/support_kb_sources.csv as of 2026-06-01. No internal review
+# SLAs, refund guarantees, or undocumented thresholds appear here.
+
+issue:
+  id: cancellation_fee
+  display_name: Cancellation fee
+  applies_to:
+    - rideshare_trips
+  not_applicable_to:
+    - full_trip_fare_dispute       # different policy branch
+    - authorization_hold_only      # see authorization_hold issue family
+
+definitions:
+  cancellation_fee: >
+    A fee charged to the rider when a trip is canceled under conditions the
+    platform considers chargeable (e.g., after a stated time threshold, or
+    after the driver has arrived).
+  distinct_from_full_fare_charge: >
+    A full fare charge for a trip the rider believes did not occur is a
+    different scenario routed through the trip-not-taken refund flow
+    (Uber UB-001), not the cancellation-fee review flow.
+  distinct_from_authorization_hold: >
+    Both Uber (UB-002) and Lyft (LY-002) state that what appears to be a
+    charge for a canceled trip may actually be a temporary authorization
+    hold rather than a final charge.
+
+freshness:
+  source_observations:
+    - source_id: UB-002
+      visible_last_updated_date: not_visible
+      freshness_risk_note: "Article notes Uber periodically experiments with cancellation policy changes, increasing freshness risk."
+    - source_id: LY-002
+      visible_last_updated_date: not_visible
+  proposed_required_metadata:
+    last_updated: <YYYY-MM-DD — to be exposed by KB owner>
+    policy_version: <string — to be exposed by KB owner>
+    review_cadence_days: <int — to be set by KB owner>
+
+policy_observations:
+  uber:
+    source_ids: [UB-002]
+    states:
+      - "A cancellation fee may apply if the rider cancels after a stated time threshold; specific timing differs by ride type."
+      - "A cancellation fee will not apply if Uber detects that the driver has not made progress to the pickup location."
+      - "A cancellation fee will not apply if the driver is 5 or more minutes late."
+      - "What looks like a charge for a canceled trip may actually be a temporary authorization hold; Uber says the hold is voided immediately but may take a few business days to clear depending on the bank."
+      - "If the rider believes they were incorrectly charged, they can enter the trip date in the cancellation-fee review form and Uber will get back to them."
+      - "GPS-based arrival time may not perfectly match real-world coordinates."
+    does_not_state:
+      - guaranteed_refund_for_review_request
+      - timing_for_review_outcome
+      - partial_waiver_rules
+  lyft:
+    source_ids: [LY-002]
+    states:
+      - "Riders may be charged a cancellation fee if they cancel more than 30 seconds after a driver accepts the ride."
+      - "Riders may be charged a fee if they cancel more than 30 seconds after requesting a Wait and Save ride."
+      - "Riders may be charged a fee if they cancel after the driver arrives."
+      - "Riders may be charged a fee if they request 3 or more rides within a 15-minute timeframe."
+      - "No-show fees may apply when the driver arrived, waited the required time, and attempted contact."
+      - "Pending charges may be temporary authorization holds; they typically drop off or appear as a refund within 5–7 business days depending on the bank (LY-002 / paired LY-006)."
+      - "Riders can dispute a wrongly charged cancel or no-show fee in the app via profile > Account > Ride history > Dispute ride charge."
+    does_not_state:
+      - that_stationary_driver_makes_rider_eligible_for_refund
+      - timing_for_dispute_resolution
+      - guaranteed_refund_for_dispute
+
+charge_type_branches:
+  # Cancellation-fee questions frequently fan into multiple charge shapes.
+  # An agent should classify the charge before answering.
+  cancellation_fee:
+    description: "A fee charged under the platform's cancellation-fee rules."
+    routing:
+      uber: "Review via the cancellation-fee review form (UB-002)."
+      lyft: "Dispute via Ride history > Dispute ride charge (LY-002)."
+  full_trip_fare:
+    description: "A charge that appears to be a full trip fare for a trip the rider says they did not take."
+    routing:
+      uber: "Route to the trip-not-taken refund flow (UB-001), NOT the cancellation-fee form."
+      lyft: "Route to the rider-facing dispute flow; outside the scope of LY-002."
+  authorization_hold:
+    description: "A pending transaction that is a temporary authorization, not a final charge."
+    routing:
+      uber: "UB-002 states holds are voided immediately and may take a few business days to clear."
+      lyft: "LY-002 / LY-006 state holds typically drop off or appear as a refund within 5–7 business days depending on the bank."
+
+audience_routing_risk:
+  # Surfaced by Q013 (Lyft): top help-center search result for a rider
+  # cancellation-fee query was driver-facing cancellation/no-show policy
+  # (LY-001), not the rider article (LY-002 ranked 4).
+  observed_failure_mode: audience_mismatch_retrieval
+  risk: >
+    Cancellation-fee content exists in both driver-facing and rider-facing
+    forms. Driver-facing articles can outrank rider-facing articles for
+    rider queries. An agent must verify the source is rider-facing before
+    using it to answer a rider's question.
+  guidance_for_agent:
+    - "Reject driver-facing cancellation/no-show policy when answering a rider question."
+    - "Prefer LY-002 over LY-001 for rider scenarios."
+
+user_actions:
+  uber:
+    primary:
+      - step: "If the rider believes the cancellation fee was incorrect, enter the trip date in the cancellation-fee review form."
+        source: UB-002
+      - step: "If the charge is actually for a trip the rider did not take, use the trip-not-taken refund flow instead."
+        source: UB-001  # cross-reference, distinct article
+    fallback:
+      - step: "If the charge appears to be a temporary authorization hold, wait the bank-dependent clearance window before disputing."
+        source: UB-002
+  lyft:
+    primary:
+      - step: "Open the Lyft app > profile > Account > Ride history, select the ride, and choose Dispute ride charge."
+        source: LY-002
+    fallback:
+      - step: "If the charge is pending, confirm via Ride history whether a final charge was applied; pending authorizations typically drop off or appear as a refund within 5–7 business days depending on the bank."
+        source: LY-002
+
+agent_handling:
+  agent_can_resolve_unconditionally: false
+  agent_can_explain_without_account:
+    - publicly_stated_cancellation_fee_rules
+    - publicly_stated_no_fee_exceptions
+    - dispute_or_review_flow
+    - authorization_hold_vs_final_charge_distinction
+  must_escalate_or_handoff_if:
+    - user_asks_whether_their_specific_fee_will_be_refunded
+    - user_asks_how_long_a_dispute_takes
+    - user_describes_scenario_outside_captured_exceptions
+    - charge_type_cannot_be_determined_without_account_lookup
+
+agent_boundary:
+  can_answer_without_account_data:
+    public_kb_guidance: true
+    eligibility_decision: false
+    refund_outcome: false
+    review_timing: false
+  requires_authenticated_account_or_order_lookup_for:
+    - identifying_the_specific_trip_and_charge_type
+    - confirming_whether_charge_is_pending_or_final
+    - submitting_the_cancellation_fee_review_form_or_dispute
+    - any_refund_or_adjustment_decision
+  boundary_reason: >
+    Captured public articles state the cancellation-fee rules and the
+    exception conditions but do not commit to refund outcomes or review
+    timing for any specific case. Charge-type classification and the
+    review submission itself require authenticated trip access.
+
+retrievability_observations:
+  # From evaluation_results.csv.
+  uber_q009:
+    internal_search_found_expected_source: true
+    rank_if_found: 1
+    failure_mode: none
+    note: "Successful row — UB-002 ranked first for the natural-language query. Content and retrieval both strong."
+  lyft_q013:
+    internal_search_found_expected_source: true
+    rank_if_found: 4
+    failure_mode: audience_mismatch_retrieval
+    note: "Top result was driver-facing cancellation/no-show policy (LY-001). Rider-facing LY-002 ranked 4."
+
+external_search_behavior_caveats:
+  uber_q009:
+    overlay: google_ai_overview
+    risk_note: "Mostly matched UB-002 but added interpretive language ('system didn't yet register') not stated directly in the article."
+  lyft_q013:
+    overlay: google_ai_overview
+    added_unsupported_guidance:
+      - "Rider 'may be eligible for a refund' because the driver was not moving"
+      - "Lyft 'often refunds the fee if the driver's GPS data shows they were not progressing'"
+    risk_note: >
+      LY-002 does not state that a stationary or non-progressing driver makes
+      the rider eligible for a refund. Treat these as external-search
+      behavior; an agent grounded in the captured KB must not reproduce them.
+
+do_not_say:
+  - phrase: "Your cancellation fee will be refunded."
+    reason: "No captured source guarantees refund outcomes."
+  - phrase: "Lyft usually refunds the fee if the driver's GPS shows non-progression."
+    reason: "LY-002 does not state this."
+  - phrase: "Your dispute will be resolved in N business days."
+    reason: "No captured source publishes a dispute-resolution timing window."
+  - phrase: "You can call rider support."
+    reason: "Uber UB-010 explicitly states no rider phone number; Lyft contact is login-gated."
+
+ambiguity_flags:
+  - condition: "User cannot tell whether the charge is a cancellation fee, a full fare, or an authorization hold."
+    handling: "Walk through the charge-type branches before routing; do not assume."
+  - condition: "User describes 'driver was not moving' (Lyft)."
+    handling: "Do NOT cite this as an eligibility rule — LY-002 does not state it. Route to in-app dispute and let Lyft review."
+  - condition: "User asks for a fee waiver upfront."
+    handling: "Explain the review/dispute flow and that outcomes depend on the platform's review of the specific trip."
+
+proposed_required_metadata:
+  # Placeholders for fields a KB owner would need to add. NOT claims about
+  # current policy.
+  eligibility:
+    refund_or_waiver:
+      required_conditions:
+        - "<TBD by KB owner — e.g., charge_type confirmed as cancellation_fee>"
+        - "<TBD by KB owner — driver_progress / lateness conditions if formalized>"
+      disqualifying_conditions:
+        - "<TBD by KB owner — e.g., dispute_window_exceeded, if any>"
+  review_or_dispute:
+    submission_channel: "<TBD by KB owner — in_app | web_form>"
+    prerequisites:
+      - "<TBD by KB owner — trip_id, trip_date, account_login>"
+    expected_response_sla_hours: "<TBD by KB owner — only if officially committed>"
+  freshness:
+    last_updated: "<TBD by KB owner>"
+    policy_version: "<TBD by KB owner>"
+    review_cadence_days: "<TBD by KB owner>"
+
+related_sources:
+  - source_id: UB-002
+    company: Uber
+    article_title: "Review cancellation fee"
+    url: https://help.uber.com/en/riders/article/review-cancellation-fee?nodeId=6bec690f-ee35-40ba-96ee-c38a8ae796e0
+    date_accessed: 2026-06-01
+  - source_id: LY-002
+    company: Lyft
+    article_title: "Cancel and no-show policy for riders"
+    url: https://help.lyft.com/hc/en-us/all/articles/115012922687-Cancellation-policy-for-passengers
+    date_accessed: 2026-06-01
+  - cross_reference: UB-001
+    note: "Trip-not-taken refund flow — used when the charge is a full trip fare rather than a cancellation fee."
+  - cross_reference: LY-006
+    note: "Lyft pending-charges article — paired with LY-002 for authorization-hold timing language."
