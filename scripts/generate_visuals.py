@@ -64,27 +64,74 @@ def plot_issue_family_scores():
 
 
 def plot_retrieval_vs_content_gap():
-    df = pd.read_csv(ANALYSIS / "company_score_summary.csv").sort_values("company")
-    x = range(len(df))
+    df = pd.read_csv(ROOT / "data/processed/evaluation_results.csv")
+    grouped = (df.groupby("company")[["retrievability_score", "public_kb_answerability_score"]]
+                 .mean()
+                 .sort_index()
+                 .reset_index())
+    x = range(len(grouped))
     width = 0.38
 
-    fig, ax = plt.subplots(figsize=(8, 4.5))
-    b1 = ax.bar([i - width / 2 for i in x], df["avg_answerability"], width,
-                label="Content (answerability)", color="#2a9d8f")
-    b2 = ax.bar([i + width / 2 for i in x], df["avg_policy_clarity"], width,
-                label="Retrieval-adjacent (policy clarity)", color="#e76f51")
+    fig, ax = plt.subplots(figsize=(8, 4.8))
+    b1 = ax.bar([i - width / 2 for i in x], grouped["retrievability_score"], width,
+                label="Retrievability", color="#e76f51")
+    b2 = ax.bar([i + width / 2 for i in x], grouped["public_kb_answerability_score"], width,
+                label="Public KB answerability", color="#2a9d8f")
     for bars in (b1, b2):
         for bar in bars:
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.03,
                     f"{bar.get_height():.1f}", ha="center", fontsize=9)
     ax.set_xticks(list(x))
-    ax.set_xticklabels(df["company"])
-    ax.set_ylim(0, 3.4)
-    ax.set_ylabel("Average score (0–3)")
-    ax.set_title("Content answerability vs. policy clarity\nArticles can answer the question yet still be hard to surface")
+    ax.set_xticklabels(grouped["company"])
+    ax.set_ylim(1, 3.4)
+    ax.set_ylabel("Average score (1–3)")
+    ax.set_title("Retrievability vs. public KB answerability\nContent often answers the question better than native search can find it")
     ax.legend(frameon=False, loc="upper right")
     ax.spines[["top", "right"]].set_visible(False)
     fig.savefig(OUT / "retrieval_vs_content_gap.png")
+    plt.close(fig)
+
+
+def plot_category_scores_by_company():
+    df = pd.read_csv(ROOT / "data/processed/evaluation_results.csv")
+    categories = [
+        ("retrievability_score", "Retrievability"),
+        ("public_kb_answerability_score", "Public KB\nanswerability"),
+        ("policy_clarity_score", "Policy clarity"),
+        ("customer_actionability_score", "Customer\nactionability"),
+        ("escalation_clarity_score", "Escalation\nclarity"),
+        ("account_specific_dependency_score", "Account-specific\ndependency"),
+        ("freshness_signal_score", "Freshness\nsignal"),
+    ]
+    cols = [c for c, _ in categories]
+    labels = [l for _, l in categories]
+    grouped = df.groupby("company")[cols].mean().sort_index()
+
+    companies = grouped.index.tolist()
+    colors = {"DoorDash": "#e76f51", "Instacart": "#2a9d8f",
+              "Lyft": "#e9c46a", "Uber": "#264653"}
+    n = len(companies)
+    width = 0.8 / n
+    x = range(len(labels))
+
+    fig, ax = plt.subplots(figsize=(12, 5.5))
+    for i, company in enumerate(companies):
+        offsets = [xi - 0.4 + width / 2 + i * width for xi in x]
+        vals = grouped.loc[company, cols].values
+        bars = ax.bar(offsets, vals, width, label=company,
+                      color=colors.get(company, "#888"))
+        for bar, v in zip(bars, vals):
+            ax.text(bar.get_x() + bar.get_width() / 2, v + 0.04,
+                    f"{v:.1f}", ha="center", fontsize=8)
+
+    ax.set_xticks(list(x))
+    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_ylim(1, 3.4)
+    ax.set_ylabel("Average score (1–3)")
+    ax.set_title("Average score by scoring category and company\nFreshness signal is uniformly weak; retrievability lags content quality")
+    ax.legend(frameon=False, loc="upper right", ncol=len(companies))
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.savefig(OUT / "category_scores_by_company.png")
     plt.close(fig)
 
 
@@ -93,7 +140,8 @@ def main():
     plot_company_scores()
     plot_issue_family_scores()
     plot_retrieval_vs_content_gap()
-    print(f"Wrote 4 plots to {OUT}")
+    plot_category_scores_by_company()
+    print(f"Wrote 5 plots to {OUT}")
 
 
 if __name__ == "__main__":
