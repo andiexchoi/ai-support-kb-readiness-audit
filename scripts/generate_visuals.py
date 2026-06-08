@@ -108,8 +108,8 @@ def plot_category_scores_by_company():
     grouped = df.groupby("company")[cols].mean().sort_index()
 
     companies = grouped.index.tolist()
-    colors = {"DoorDash": "#e76f51", "Instacart": "#2a9d8f",
-              "Lyft": "#e9c46a", "Uber": "#264653"}
+    colors = {"DoorDash": "#eb1700", "Instacart": "#FF7009",
+              "Lyft": "#FF00BF", "Uber": "#000000"}
     n = len(companies)
     width = 0.8 / n
     x = range(len(labels))
